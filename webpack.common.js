@@ -4,8 +4,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
-    popup: './src/Popup.tsx',
-    newtab: './src/NewTab.tsx',
+    popup: './src/PopupIndex.tsx',
+    newtab: './src/NewTabIndex.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'build'),
@@ -25,7 +25,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.svg'],
   },
   plugins: [
     new HtmlWebpackPlugin({

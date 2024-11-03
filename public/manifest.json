@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "My React Extension",
+  "name": "Tabas",
   "version": "1.0",
-  "description": "A simple React Chrome extension with popup and new tab",
+  "description": "Organize your tabs and access them quickly."  ,
   "action": {
     "default_popup": "popup.html"
   },
