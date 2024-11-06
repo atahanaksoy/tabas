@@ -1,5 +1,6 @@
 import React from "react";
 import { ProfileDrawer } from "./ProfileDrawer";
+import FoldersView from "./FoldersView";
 
 export const NewTab = () => {
   return (
@@ -8,8 +9,8 @@ export const NewTab = () => {
         <div className="col-span-2 p-4">
           <ProfileDrawer showCreateProfileButton={true} />
         </div>
-        <div className="col-span-10 py-4">
-          <h1>Hello world!!!!</h1>
+        <div className="col-span-10 py-8 pr-8">
+          <FoldersView />
         </div>
       </div>
     </div>

@@ -1,23 +1,6 @@
 import React, { useState, useRef } from "react";
-
-const mockProfiles = [
-  { id: 1, name: "Personal" },
-  { id: 2, name: "Work" },
-  { id: 3, name: "Gaming" },
-  { id: 4, name: "Travel" },
-  { id: 5, name: "Fitness" },
-  { id: 6, name: "Music" },
-  { id: 7, name: "Reading" },
-  { id: 8, name: "Cooking" },
-  { id: 9, name: "Photography" },
-  { id: 10, name: "Blogging" },
-  { id: 11, name: "Gardening" },
-  { id: 12, name: "DIY" },
-  { id: 13, name: "Tech" },
-  { id: 14, name: "Fashion" },
-  { id: 15, name: "Finance" },
-  { id: 16, name: "Education" },
-];
+import { mockProfiles } from "../mocks";
+import { Profile } from "../types";
 
 const DrawerIcon = (
   <svg
@@ -43,13 +26,10 @@ interface ProfileDrawerProps {
 export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   showCreateProfileButton = false,
 }) => {
-  const [selectedProfile, setSelectedProfile] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const drawerCheckboxRef = useRef<HTMLInputElement>(null);
 
-  const handleProfileSelect = (profile: { id: number; name: string }) => {
+  const handleProfileSelect = (profile: Profile) => {
     setSelectedProfile(profile);
     if (drawerCheckboxRef.current) {
       drawerCheckboxRef.current.checked = false;
@@ -86,10 +66,10 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                 >
                   <div className="avatar placeholder">
                     <div className="bg-neutral text-neutral-content w-8 rounded-full">
-                      <span className="text-xs">{profile.name.charAt(0)}</span>
+                      <span className="text-xs">{profile.displayName.charAt(0)}</span>
                     </div>
                   </div>
-                  {profile.name}
+                  {profile.displayName}
                 </button>
               </li>
             ))}
