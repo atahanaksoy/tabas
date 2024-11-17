@@ -47,7 +47,7 @@ const PopupFolders: React.FC<PopupFoldersProps> = (props) => {
           <PlusIcon className="h-6 w-6" />
         </button>
       </div>
-      {isCreatingFolder && (
+      {isCreatingFolder && folders.length > 0 && (
         <CreatePopupFolder onAddFolder={handleCreateFolder} />
       )}
       {folders.length === 0 ? (

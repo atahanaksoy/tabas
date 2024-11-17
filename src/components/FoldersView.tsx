@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Folder, Profile, Tab } from "../types";
 import {
   PencilIcon,
@@ -42,6 +42,10 @@ const FoldersView: React.FC<FoldersViewProps> = ({
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFolders(profile.folders);
+  }, [profile]);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders((prev) => ({

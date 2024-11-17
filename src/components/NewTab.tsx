@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import FoldersView from "./FoldersView";
 import CreateProfileForm from "./CreateProfileForm";
 import { Profile, Folder, Tab } from "../types";
-import { getSelectedProfile, getProfiles, saveSelectedProfile, createFolder as createFolderInStorage, updateFolder as updateFolderInStorage, deleteFolder as deleteFolderInStorage, createTab as createTabInStorage, updateTab as updateTabInStorage, deleteTab as deleteTabInStorage } from "../services/ChromeStorageService";
+import { getSelectedProfile, getProfiles, createFolder as createFolderInStorage, updateFolder as updateFolderInStorage, deleteFolder as deleteFolderInStorage, createTab as createTabInStorage, updateTab as updateTabInStorage, deleteTab as deleteTabInStorage } from "../services/ChromeStorageService";
 
 export const NewTab = () => {
+  const [tabId, setTabId] = useState<number | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
 
   useEffect(() => {
+    // We need to send message to check if Tabas is open as a tab so we avoid showing the extension in the popup
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.message === "isTabasOpen") {
         sendResponse({ isOpen: true });
@@ -17,30 +18,51 @@ export const NewTab = () => {
     });
     
     const fetchProfiles = async () => {
-      const profiles = await getProfiles();
-      setProfiles(profiles);
-    };
-
-    const fetchSelectedProfile = async () => {
-      const profileId = await getSelectedProfile();
-      if (profileId) {
+      try {
         const profiles = await getProfiles();
-        const profile = profiles.find(p => p.id === profileId);
-        setSelectedProfile(profile || null);
-        setFolders(profile?.folders || []);
+        setProfiles(() => [...profiles]);
+      } catch (error) {
+        console.error("Error fetching profiles:", error);
+      }
+    };
+    
+    const fetchSelectedProfile = async () => {
+      try {
+        const profileId = await getSelectedProfile();
+        if (profileId) {
+          const profiles = await getProfiles();
+          const profile = profiles.find(p => p.id === profileId);
+          setSelectedProfile(() => (profile ? { ...profile } : null));
+        }
+      } catch (error) {
+        console.error("Error fetching selected profile:", error);
       }
     };
 
+    const fetchTabIdFromChrome = async () => {
+        const tab = await chrome.tabs.getCurrent();
+        setTabId(tab?.id || null);
+    }
+
+    const handleTabActivated = async (activeInfo: chrome.tabs.TabActiveInfo) => {
+      const tab = await chrome.tabs.get(activeInfo.tabId);
+      if (tab.id === tabId) {
+        await fetchProfiles();
+        await fetchSelectedProfile();
+      }
+    };
+
+    fetchTabIdFromChrome().then(() => {
+      chrome.tabs.onActivated.addListener(handleTabActivated);
+    });
+
     fetchProfiles();
     fetchSelectedProfile();
-  }, []);
 
-  const selectProfile = async (profileId: string) => {
-    const profile = profiles.find(p => p.id === profileId);
-    setSelectedProfile(profile || null);
-    setFolders(profile?.folders || []);
-    await saveSelectedProfile(profileId);
-  };
+    return () => {
+      chrome.tabs.onActivated.removeListener(handleTabActivated);
+    };
+  }, [tabId]);
 
   const createFolder = async (profileId: string, folderName: string) => {
     const newFolder: Folder = {
@@ -58,7 +80,6 @@ export const NewTab = () => {
     });
     setProfiles(updatedProfiles);
     if (selectedProfile?.id === profileId) {
-      setFolders([newFolder, ...folders]);
     }
     await createFolderInStorage(profileId, newFolder);
   };
@@ -74,9 +95,6 @@ export const NewTab = () => {
       return profile;
     });
     setProfiles(updatedProfiles);
-    if (selectedProfile?.id === profileId) {
-      setFolders(folders.map(f => (f.id === folder.id ? folder : f)));
-    }
     await updateFolderInStorage(profileId, folder);
   };
 
@@ -91,9 +109,6 @@ export const NewTab = () => {
       return profile;
     });
     setProfiles(updatedProfiles);
-    if (selectedProfile?.id === profileId) {
-      setFolders(folders.filter(f => f.id !== folderId));
-    }
     await deleteFolderInStorage(profileId, folderId);
   };
 
@@ -113,16 +128,6 @@ export const NewTab = () => {
       return profile;
     });
     setProfiles(updatedProfiles);
-    if (selectedProfile?.id === profileId) {
-      setFolders(
-        folders.map(f => {
-          if (f.id === folderId) {
-            return { ...f, tabs: [...f.tabs, tab] };
-          }
-          return f;
-        })
-      );
-    }
     await createTabInStorage(profileId, folderId, tab);
   };
 
@@ -145,19 +150,6 @@ export const NewTab = () => {
       return profile;
     });
     setProfiles(updatedProfiles);
-    if (selectedProfile?.id === profileId) {
-      setFolders(
-        folders.map(f => {
-          if (f.id === folderId) {
-            return {
-              ...f,
-              tabs: f.tabs.map(t => (t.id === tab.id ? tab : t)),
-            };
-          }
-          return f;
-        })
-      );
-    }
     await updateTabInStorage(profileId, folderId, tab);
   };
 
@@ -180,19 +172,6 @@ export const NewTab = () => {
       return profile;
     });
     setProfiles(updatedProfiles);
-    if (selectedProfile?.id === profileId) {
-      setFolders(
-        folders.map(f => {
-          if (f.id === folderId) {
-            return {
-              ...f,
-              tabs: f.tabs.filter(t => t.id !== tabId),
-            };
-          }
-          return f;
-        })
-      );
-    }
     await deleteTabInStorage(profileId, folderId, tabId);
   };
 
@@ -208,20 +187,18 @@ export const NewTab = () => {
     <div data-theme="dim" className="w-screen h-screen overflow-hidden">
       <div className="grid grid-cols-12 gap-4 h-full">
         <div className="col-span-1 p-4">
-          sidebar here
+          profiles here
         </div>
         <div className="col-span-9 p-4">
-          {selectedProfile && (
-            <FoldersView 
-              profile={selectedProfile}
-              onCreateFolder={createFolder}
-              onUpdateFolder={updateFolder}
-              onDeleteFolder={deleteFolder}
-              onCreateTab={createTab}
-              onUpdateTab={updateTab}
-              onDeleteTab={deleteTab}
-            />
-          )}
+          <FoldersView 
+            profile={selectedProfile}
+            onCreateFolder={createFolder}
+            onUpdateFolder={updateFolder}
+            onDeleteFolder={deleteFolder}
+            onCreateTab={createTab}
+            onUpdateTab={updateTab}
+            onDeleteTab={deleteTab}
+          />
         </div>
         <div className="col-span-2 p-4">
           open tabs here
