@@ -127,8 +127,11 @@ export const createTab = async (profileId: string, folderId: string, tab: Tab) =
   if (profile) {
     const folder = profile.folders.find(f => f.id === folderId);
     if (folder) {
-      folder.tabs.push(tab);
-      await saveProfiles(profiles);
+      const tabExists = folder.tabs.some(t => t.URL === tab.URL);
+      if (!tabExists) {
+        folder.tabs.push(tab);
+        await saveProfiles(profiles);
+      }
     }
   }
 };

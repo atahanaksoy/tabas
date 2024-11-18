@@ -10,42 +10,31 @@ import {
 import { Reorder, useDragControls } from "framer-motion";
 import { AnimatePresence, motion } from "framer-motion";
 import "./FoldersView.css";
-import { updateProfileFolders } from '../services/ChromeStorageService';
+import { useStateContext } from "./StateContext";
 
 interface FoldersViewProps {
-  profile: Profile;
-  onCreateFolder: (profileId: string, folderName: string) => void;
-  onUpdateFolder: (profileId: string, folder: Folder) => void;
-  onDeleteFolder: (profileId: string, folderId: string) => void;
-  onCreateTab: (profileId: string, folderId: string, tab: Tab) => void;
-  onUpdateTab: (profileId: string, folderId: string, tab: Tab) => void;
-  onDeleteTab: (profileId: string, folderId: string, tabId: string) => void;
 }
 
-const FoldersView: React.FC<FoldersViewProps> = ({
-  profile,
-  onCreateFolder,
-  onUpdateFolder,
-  onDeleteFolder,
-  onCreateTab,
-  onUpdateTab,
-  onDeleteTab,
-}) => {
-  const [folders, setFolders] = useState(profile.folders);
+const FoldersView: React.FC<FoldersViewProps> = ({}) => {
+  const { selectedProfile, folders, deleteFolder, updateProfileFolders   } = useStateContext();
+
+  const [localFolders, setLocalFolders] = useState(folders);
   const [expandedFolders, setExpandedFolders] = useState<{
     [key: string]: boolean;
   }>(
-    profile.folders.reduce((acc, folder) => {
+    selectedProfile?.folders.reduce((acc, folder) => {
       acc[folder.id] = true;
       return acc;
-    }, {} as { [key: string]: boolean })
+    }, {} as { [key: string]: boolean }) || {}
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    setFolders(profile.folders);
-  }, [profile]);
+    if (selectedProfile) {
+      setLocalFolders(selectedProfile.folders);
+    }
+  }, [selectedProfile]);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders((prev) => ({
@@ -58,21 +47,20 @@ const FoldersView: React.FC<FoldersViewProps> = ({
     setFolderToDelete(folderId);
     setIsModalOpen(true);
   };
-
   const confirmDelete = async () => {
-    if (folderToDelete) {
-      await onDeleteFolder(profile.id, folderToDelete);
-      setFolders(folders.filter(folder => folder.id !== folderToDelete));
+    if (folderToDelete && selectedProfile && localFolders) {
+      await deleteFolder(selectedProfile.id, folderToDelete);
+      setLocalFolders(localFolders.filter(folder => folder.id !== folderToDelete));
       setIsModalOpen(false);
       setFolderToDelete(null);
     }
   };
-
   const handleReorder = async (newFolders: Folder[]) => {
-    setFolders(newFolders);
-    await updateProfileFolders(profile.id, newFolders);
+    if (selectedProfile) {
+      setLocalFolders(newFolders);
+      updateProfileFolders(selectedProfile.id, newFolders);
+    }
   };
-
 
   const dragControls = useDragControls();
 
@@ -81,14 +69,14 @@ const FoldersView: React.FC<FoldersViewProps> = ({
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-xl font-bold">
-            Folders for <span className="text-accent">{profile.displayName}</span>
+            Folders for <span className="text-accent">{selectedProfile && selectedProfile.displayName}</span>
           </h1>
-          <p className="text-sm text-gray-500">{folders.length} folder{folders.length > 1 && "s"}</p>
+          <p className="text-sm text-gray-500">{localFolders && localFolders.length} folder{localFolders && localFolders.length > 1 && "s"}</p>
         </div>
       </div>
       <div className="h-screen overflow-y-auto">
-        <Reorder.Group axis="y" values={folders} onReorder={handleReorder}>
-          {folders.map((folder) => (
+        <Reorder.Group axis="y" values={localFolders || []} onReorder={handleReorder}>
+          {localFolders && localFolders.map((folder) => (
             <Reorder.Item
               key={folder.id}
               value={folder}
@@ -146,10 +134,10 @@ const FoldersView: React.FC<FoldersViewProps> = ({
                     <Reorder.Group
                       values={folder.tabs}
                       onReorder={(newTabs) => {
-                        const updatedFolders = folders.map((f) =>
+                        const updatedFolders = localFolders.map((f) =>
                           f.id === folder.id ? { ...f, tabs: newTabs } : f
                         );
-                        setFolders(updatedFolders);
+                        setLocalFolders(updatedFolders);
                       }}
                     ></Reorder.Group>
                     <div className="ml-4 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

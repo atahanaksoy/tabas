@@ -2,18 +2,10 @@ import React, { useState, useEffect } from "react";
 import { ProfileDrawer } from "./ProfileDrawer";
 import { TabiLogo } from "./TabiLogo";
 import PopupFolders from "./PopupFolders";
-import {
-  getSelectedProfile,
-  getProfiles,
-  saveSelectedProfile,
-  createFolder as createFolderInStorage,
-} from "../services/ChromeStorageService";
-import { Profile, Folder } from "../types";
+import { useStateContext } from "./StateContext";
 
 export const Popup = () => {
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
+  const { selectedProfile, profiles, folders, selectProfile, createFolder, saveCurrentTab } = useStateContext();
   const [isTabasOpen, setIsTabasOpen] = useState(false);
 
   useEffect(() => {
@@ -31,53 +23,7 @@ export const Popup = () => {
         );
       }
     });
-
-    const fetchProfiles = async () => {
-      const profiles = await getProfiles();
-      setProfiles(profiles);
-    };
-
-    const fetchSelectedProfile = async () => {
-      const profileId = await getSelectedProfile();
-      if (profileId) {
-        const profiles = await getProfiles();
-        const profile = profiles.find((p) => p.id === profileId);
-        setSelectedProfile(profile || null);
-        setFolders(profile?.folders || []);
-      }
-    };
-
-    fetchProfiles();
-    fetchSelectedProfile();
-  }, []);
-
-  const selectProfile = async (profileId: string) => {
-    const profile = profiles.find((p) => p.id === profileId);
-    setSelectedProfile(profile || null);
-    setFolders(profile?.folders || []);
-    await saveSelectedProfile(profileId);
-  };
-
-  const createFolder = async (profileId: string, folderName: string) => {
-    const newFolder: Folder = {
-      id: Date.now().toString(),
-      displayName: folderName,
-      description: "",
-      creationDate: new Date(),
-      tabs: [],
-    };
-    const updatedProfiles = profiles.map((profile) => {
-      if (profile.id === profileId) {
-        return { ...profile, folders: [newFolder, ...profile.folders] };
-      }
-      return profile;
-    });
-    setProfiles(updatedProfiles);
-    if (selectedProfile?.id === profileId) {
-      setFolders([newFolder, ...folders]);
-    }
-    await createFolderInStorage(profileId, newFolder);
-  };
+  }, [isTabasOpen])
 
   if (!selectedProfile) {
     return <div>Loading...</div>;
@@ -112,6 +58,7 @@ export const Popup = () => {
             selectedProfile={selectedProfile}
             folders={folders}
             createFolder={createFolder}
+            saveCurrentTab={saveCurrentTab}
           />
         </div>
       )}

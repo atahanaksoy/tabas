@@ -2,21 +2,24 @@ import React, { useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { CreatePopupFolder, PopupFolder } from "./PopupFolder";
 import { Folder, Profile } from "../types";
+import { useStateContext } from "./StateContext";
 
 interface PopupFoldersProps {
   selectedProfile: Profile;
   folders: Folder[];
   createFolder: (profileId: string, folderName: string) => void;
+  saveCurrentTab: (folderId: string) => void;
 }
 
-const PopupFolders: React.FC<PopupFoldersProps> = (props) => {
-  const { selectedProfile, folders, createFolder } = props;
-
+const PopupFolders: React.FC<PopupFoldersProps> = () => {
+  const { selectedProfile, folders, createFolder, saveCurrentTab } = useStateContext();
   const [isCreatingFolder, setIsCreatingFolder] = useState<boolean>(false);
 
   const handleCreateFolder = (folderName: string) => {
     console.log("Creating folder:", folderName);
-    createFolder(selectedProfile.id, folderName);
+    if (selectedProfile) {
+      createFolder(selectedProfile.id, folderName);
+    }
     setIsCreatingFolder(false);
   };
 
@@ -33,7 +36,7 @@ const PopupFolders: React.FC<PopupFoldersProps> = (props) => {
         <div>
           <h1 className="text-xl font-bold">
             Folders for{" "}
-            <span className="text-accent">{selectedProfile.displayName}</span>
+            <span className="text-accent">{selectedProfile?.displayName}</span>
           </h1>
           <p className="text-sm text-gray-500">
             {folders.length} folder{folders.length > 1 && "s"}
@@ -76,7 +79,7 @@ const PopupFolders: React.FC<PopupFoldersProps> = (props) => {
                 folderName={folder.displayName}
                 tabCount={folder.tabs.length}
                 onSaveSession={function (): void {}}
-                onSaveCurrentTab={function (): void {}}
+                onSaveCurrentTab={() => saveCurrentTab(folder.id)}
               />
             </div>
           ))}
