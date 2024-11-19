@@ -6,6 +6,7 @@ interface PopupFolderProps {
   tabCount: number;
   onSaveSession: () => void;
   onSaveCurrentTab: () => void;
+  canAddTab: boolean;
 }
 
 export const PopupFolder: React.FC<PopupFolderProps> = ({
@@ -13,7 +14,9 @@ export const PopupFolder: React.FC<PopupFolderProps> = ({
   tabCount,
   onSaveSession,
   onSaveCurrentTab,
+  canAddTab,
 }) => {
+  console.log("canaddtab is", canAddTab);
   return (
     <div className="popup-folder p-4 bg-base-200 w-full flex justify-between items-center rounded-lg">
       <div>
@@ -29,8 +32,9 @@ export const PopupFolder: React.FC<PopupFolderProps> = ({
             <FolderArrowDownIcon className="h-4 w-4" cursor="pointer"/>
           </button>
         </div>
-        <div className="tooltip tooltip-bottom" data-tip="Add Tab">
+        <div className="tooltip tooltip-bottom" data-tip={canAddTab ? "Add Tab" : "Tab already added"}>
           <button
+            disabled={!canAddTab}
             className="btn btn-sm flex items-center"
             onClick={onSaveCurrentTab}
             >

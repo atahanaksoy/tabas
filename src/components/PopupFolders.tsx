@@ -12,7 +12,7 @@ interface PopupFoldersProps {
 }
 
 const PopupFolders: React.FC<PopupFoldersProps> = () => {
-  const { selectedProfile, folders, createFolder, saveCurrentTab } = useStateContext();
+  const { selectedProfile, folders, createFolder, saveCurrentTab, canAddCurrentTab } = useStateContext();
   const [isCreatingFolder, setIsCreatingFolder] = useState<boolean>(false);
 
   const handleCreateFolder = (folderName: string) => {
@@ -24,11 +24,8 @@ const PopupFolders: React.FC<PopupFoldersProps> = () => {
   };
 
   const handleButtonClick = () => {
-    console.log("Button clicked, setting isCreatingFolder to true");
     setIsCreatingFolder(true);
   };
-
-  console.log(isCreatingFolder);
 
   return (
     <div className="flex flex-col w-full py-4">
@@ -80,6 +77,7 @@ const PopupFolders: React.FC<PopupFoldersProps> = () => {
                 tabCount={folder.tabs.length}
                 onSaveSession={function (): void {}}
                 onSaveCurrentTab={() => saveCurrentTab(folder.id)}
+                canAddTab={canAddCurrentTab(folder.id)}
               />
             </div>
           ))}

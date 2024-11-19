@@ -16,7 +16,7 @@ interface FoldersViewProps {
 }
 
 const FoldersView: React.FC<FoldersViewProps> = ({}) => {
-  const { selectedProfile, folders, deleteFolder, updateProfileFolders   } = useStateContext();
+  const { selectedProfile, folders, deleteFolder, updateProfileFolders, canAddTab } = useStateContext();
 
   const [localFolders, setLocalFolders] = useState(folders);
   const [expandedFolders, setExpandedFolders] = useState<{
