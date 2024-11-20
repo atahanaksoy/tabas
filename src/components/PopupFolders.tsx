@@ -16,7 +16,6 @@ const PopupFolders: React.FC<PopupFoldersProps> = () => {
   const [isCreatingFolder, setIsCreatingFolder] = useState<boolean>(false);
 
   const handleCreateFolder = (folderName: string) => {
-    console.log("Creating folder:", folderName);
     if (selectedProfile) {
       createFolder(selectedProfile.id, folderName);
     }

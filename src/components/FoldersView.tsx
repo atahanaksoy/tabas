@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Folder, Profile, Tab } from "../types";
+import { Folder } from "../types";
 import {
   PencilIcon,
   TrashIcon,
@@ -16,7 +16,7 @@ interface FoldersViewProps {
 }
 
 const FoldersView: React.FC<FoldersViewProps> = ({}) => {
-  const { selectedProfile, folders, deleteFolder, updateProfileFolders, canAddTab } = useStateContext();
+  const { selectedProfile, folders, deleteFolder, updateProfileFolders } = useStateContext();
 
   const [localFolders, setLocalFolders] = useState(folders);
   const [expandedFolders, setExpandedFolders] = useState<{
@@ -139,8 +139,7 @@ const FoldersView: React.FC<FoldersViewProps> = ({}) => {
                         );
                         setLocalFolders(updatedFolders);
                       }}
-                    ></Reorder.Group>
-                    <div className="ml-4 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    >
                       {folder.tabs.map((tab) => (
                         <Reorder.Item
                           drag={true}
@@ -151,10 +150,9 @@ const FoldersView: React.FC<FoldersViewProps> = ({}) => {
                           <span className="mr-2 text-base font-medium">
                             {tab.displayName}
                           </span>
-                          {/* Additional tab actions can be added here */}
                         </Reorder.Item>
                       ))}
-                    </div>
+                    </Reorder.Group>
                   </motion.div>
                 )}
               </AnimatePresence>
