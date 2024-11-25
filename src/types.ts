@@ -8,6 +8,7 @@ export type Tab = {
     displayName: string;
     description?: string;
     notes?: string;
+    faviconUrl: string;
 };
 
 export type Folder = {

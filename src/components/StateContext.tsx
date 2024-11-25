@@ -246,6 +246,7 @@ export const StateProvider: React.FC<{ children: React.ReactNode }> = ({
         id: activeTab.id?.toString() || Date.now().toString(),
         displayName: activeTab.title || "Untitled",
         URL: activeTab.url || "",
+        faviconUrl: activeTab.favIconUrl || "",
       };
 
       // Create the tab in storage

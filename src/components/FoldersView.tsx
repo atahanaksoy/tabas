@@ -147,6 +147,13 @@ const FoldersView: React.FC<FoldersViewProps> = ({}) => {
                           value={tab}
                           className="flex items-center mb-1 p-4 bg-base-300 rounded-lg"
                         >
+                          {tab.faviconUrl && (
+                            <img
+                              src={tab.faviconUrl}
+                              alt="Favicon"
+                              className="mr-2 w-4 h-4"
+                            />
+                          )}
                           <span className="mr-2 text-base font-medium">
                             {tab.displayName}
                           </span>
